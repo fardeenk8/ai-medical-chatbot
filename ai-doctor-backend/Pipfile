@@ -58,10 +58,14 @@ typer = "==0.15.1"
 typing-extensions = "==4.12.2"
 tzdata = "==2024.2"
 urllib3 = "==2.3.0"
-uvicorn = "==0.34.0"
 websockets = "==14.1"
 python-dotenv = "*"
 fastapi = {extras = ["all"], version = "*"}
+motor = "*"
+passlib = {extras = ["bcrypt"], version = "*"}
+python-jose = {extras = ["cryptography"], version = "*"}
+fpdf = "*"
+uvicorn = "*"
 
 [dev-packages]
 

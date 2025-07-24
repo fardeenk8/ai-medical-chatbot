@@ -1,25 +1,35 @@
-# app/routes/chat.py
-from fastapi import APIRouter, UploadFile, File
+from fastapi import APIRouter, UploadFile, File, Form
 from app.services.stt import transcribe_audio
 from app.services.vision import analyze_image
 from app.services.tts import synthesize_speech
+from app.db import db
+from app.models.diagnosis import Diagnosis
 import uuid, os, shutil
 
 router = APIRouter()
 
+UPLOADS_DIR = "uploads"
+
 @router.post("/api/chat")
-async def chat(audio: UploadFile = File(...), image: UploadFile = File(None)):
-    # Save audio
-    audio_path = f"temp/{uuid.uuid4()}-{audio.filename}"
+async def chat(audio: UploadFile = File(...), image: UploadFile = File(None), symptom: str = Form(None)):
+    os.makedirs(UPLOADS_DIR, exist_ok=True)
+
+    # Save audio permanently
+    audio_filename = f"{uuid.uuid4()}-{audio.filename}"
+    audio_path = os.path.join(UPLOADS_DIR, audio_filename)
     with open(audio_path, "wb") as f:
         shutil.copyfileobj(audio.file, f)
+    audio_url = f"/uploads/{audio_filename}"
 
-    # Save image
+    # Save image permanently
     image_path = None
+    image_url = None
     if image:
-        image_path = f"temp/{uuid.uuid4()}-{image.filename}"
+        image_filename = f"{uuid.uuid4()}-{image.filename}"
+        image_path = os.path.join(UPLOADS_DIR, image_filename)
         with open(image_path, "wb") as f:
             shutil.copyfileobj(image.file, f)
+        image_url = f"/uploads/{image_filename}"
 
     # 1. Transcribe speech
     transcript = transcribe_audio(audio_path)
@@ -32,6 +42,8 @@ async def chat(audio: UploadFile = File(...), image: UploadFile = File(None)):
         Donot say 'In the image I see' but say 'With what I see and hear, I think you have ....'
         Dont respond as an AI model in markdown, your answer should mimic that of an actual doctor not an AI bot, 
         Keep your answer concise (max 2 sentences). No preamble, start your answer right away please"""
+    if symptom:
+        system_prompt += f" The user has also indicated a primary symptom of: {symptom}. Please take this into account."
     query = system_prompt + transcript
 
     # 3. Diagnose image
@@ -41,11 +53,25 @@ async def chat(audio: UploadFile = File(...), image: UploadFile = File(None)):
         diagnosis = "No image provided for me to analyze."
 
     # 4. TTS Response
-    voice_path = f"temp/{uuid.uuid4()}.mp3"  # <-- this line was missing
-    voice_file = synthesize_speech(diagnosis, output_path=voice_path)
+    voice_path = f"temp/{uuid.uuid4()}.mp3"
+    synthesize_speech(diagnosis, output_path=voice_path)
+
+    # 5. Save to MongoDB
+    record = Diagnosis(
+        userId="anonymous",
+        diagnosis=diagnosis,
+        transcript=transcript,
+        audioUrl=audio_url,
+        imageUrl=image_url,
+        ttsUrl=f"/temp/{os.path.basename(voice_path)}",
+        symptom=symptom
+    )
+    await db.diagnoses.insert_one(record.model_dump())
 
     return {
         "transcript": transcript,
         "diagnosis": diagnosis,
-        "voice_url": f"http://localhost:8000/{voice_path}"
+        "voice_url": f"/temp/{os.path.basename(voice_path)}",
+        "image_url": image_url,
+        "audio_url": audio_url
     }
