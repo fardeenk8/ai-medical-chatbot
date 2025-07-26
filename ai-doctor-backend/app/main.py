@@ -31,11 +31,7 @@ app.add_middleware(
 app.mount("/temp", StaticFiles(directory="temp"), name="temp")
 app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 
-# Image diagnosis endpoint
-@app.post("/api/image-diagnosis")
-async def image_diagnosis(image: UploadFile = File(...)):
-    # Process the image and return diagnosis
-    return "Based on the image, it looks like a mild skin rash."
+
 
 # TTS endpoint
 class TTSRequest(BaseModel):
@@ -54,7 +50,7 @@ async def generate_tts(data: TTSRequest):
     return FileResponse(path, media_type="audio/mpeg", filename=filename)
 
 # Include chat router
-app.include_router(chat.router)
+app.include_router(chat.router, prefix="/api")
 app.include_router(auth.router, prefix="/api/auth")
 app.include_router(diagnosis.router)
 app.include_router(pdf.router)

@@ -11,4 +11,4 @@ def get_db():
     return db
 
 async def get_diagnosis_by_id(diagnosis_id: str):
-    return await db.diagnoses.find_one({"_id": ObjectId(diagnosis_id)})
+    return await db.diagnoses.find_one({"frontendId": diagnosis_id})

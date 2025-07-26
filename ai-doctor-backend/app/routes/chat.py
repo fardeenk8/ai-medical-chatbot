@@ -9,9 +9,10 @@ import uuid, os, shutil
 router = APIRouter()
 
 UPLOADS_DIR = "uploads"
+API_BASE_URL = os.environ.get("API_BASE_URL")
 
-@router.post("/api/chat")
-async def chat(audio: UploadFile = File(...), image: UploadFile = File(None), symptom: str = Form(None)):
+@router.post("/chat")
+async def chat(audio: UploadFile = File(...), image: UploadFile = File(None), symptom: str = Form(None), frontendId: str = Form(...)):
     os.makedirs(UPLOADS_DIR, exist_ok=True)
 
     # Save audio permanently
@@ -19,7 +20,7 @@ async def chat(audio: UploadFile = File(...), image: UploadFile = File(None), sy
     audio_path = os.path.join(UPLOADS_DIR, audio_filename)
     with open(audio_path, "wb") as f:
         shutil.copyfileobj(audio.file, f)
-    audio_url = f"/uploads/{audio_filename}"
+    audio_url = f"{API_BASE_URL}/uploads/{audio_filename}"
 
     # Save image permanently
     image_path = None
@@ -29,7 +30,7 @@ async def chat(audio: UploadFile = File(...), image: UploadFile = File(None), sy
         image_path = os.path.join(UPLOADS_DIR, image_filename)
         with open(image_path, "wb") as f:
             shutil.copyfileobj(image.file, f)
-        image_url = f"/uploads/{image_filename}"
+        image_url = f"{API_BASE_URL}/uploads/{image_filename}"
 
     # 1. Transcribe speech
     transcript = transcribe_audio(audio_path)
@@ -63,15 +64,16 @@ async def chat(audio: UploadFile = File(...), image: UploadFile = File(None), sy
         transcript=transcript,
         audioUrl=audio_url,
         imageUrl=image_url,
-        ttsUrl=f"/temp/{os.path.basename(voice_path)}",
-        symptom=symptom
+        ttsUrl=f"{API_BASE_URL}/temp/{os.path.basename(voice_path)}",
+        symptom=symptom,
+        frontendId=frontendId
     )
     await db.diagnoses.insert_one(record.model_dump())
 
     return {
         "transcript": transcript,
         "diagnosis": diagnosis,
-        "voice_url": f"/temp/{os.path.basename(voice_path)}",
+        "voice_url": f"{API_BASE_URL}/temp/{os.path.basename(voice_path)}",
         "image_url": image_url,
         "audio_url": audio_url
     }
