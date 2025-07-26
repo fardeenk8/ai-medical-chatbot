@@ -10,4 +10,5 @@ class Diagnosis(BaseModel):
     imageUrl: Optional[str] = None
     ttsUrl: Optional[str] = None
     symptom: Optional[str] = None
+    frontendId: str # New field to store the frontend-generated ID
     createdAt: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
