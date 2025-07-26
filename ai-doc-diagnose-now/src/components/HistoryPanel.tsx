@@ -45,7 +45,7 @@ export const HistoryPanel = ({ history, onPlayTTS, apiBaseUrl }: HistoryPanelPro
     <div className="medical-card rounded-2xl p-6">
       <h3 className="text-lg font-semibold text-foreground mb-4">Recent Diagnoses</h3>
       
-      <ScrollArea className="h-80">
+      <ScrollArea className="h-[450px]">
         <div className="space-y-4">
           {history.map((item) => (
             <div key={item.id} className="glass-effect rounded-xl p-4 space-y-3">
