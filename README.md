@@ -50,8 +50,8 @@ MediCare AI is an AI-powered chatbot that provides medical insights by analyzing
 ## 📂 Project Structure
 
 MediCare-AI/
-├── ai-doc-diagnose-now/ # Frontend (React + Tailwind)
-├── ai-doctor-backend/ # Backend (FastAPI + PDF Generation)
+├── ai-doc-diagnose-now/  # Frontend (React + Tailwind)
+├── ai-doctor-backend/  # Backend (FastAPI + PDF Generation)
 └── README.md
 
 ---
