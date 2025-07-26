@@ -1,5 +1,5 @@
 {
   "builds": [
-    { "src": "index.html", "use": "@vercel/static" }
+    { "src": "ai-medical-chatbot/ai-doc-diagnose-now/index.html", "use": "@vercel/static" }
   ]
 }
