@@ -1,5 +1,5 @@
 {
-  "builds": [
-    { "src": "ai-doc-diagnose-now/index.html", "use": "@vercel/static" }
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/" }
   ]
 }
