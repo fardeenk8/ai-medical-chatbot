@@ -1,0 +1,5 @@
+
+# Never commit secrets
+ai-doctor-backend/.env
+.env
+*.env
